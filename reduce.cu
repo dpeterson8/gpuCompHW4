@@ -140,36 +140,7 @@ __global__ void reduce3(float *in, float *out, int n)
     // write result for this block to global mem
     if (tid == 0) out[blockIdx.x] = sdata[0];
 }
-
-
-// __global__ void reduce3(float *in, float *out, int n)
-// {
-//     extern __shared__ float sdata[];
-
-//     // load shared mem
-//     unsigned int tid = threadIdx.x;
-//     unsigned int i = blockIdx.x*blockDim.x + threadIdx.x;
-//     unsigned int distance = blockDim.x/2;
-
-//     sdata[tid] = (i < n) ? in[i] : 0;
-//     // sdata[tid + distance] = (i + distance < n) ? in[i + distance] : 0;
-
-//     // printf("%d", blockDim.x);
-//     __syncthreads();
-//     for (unsigned int s=1; s < (blockDim.x); s *= 2)
-//     {
-
-//         distance = blockDim.x/s/2;
-
-//         if(tid < distance) {
-//             sdata[tid] += sdata[distance + tid]; 
-//         }
-//         __syncthreads();
-//     }
-    
-//     // write result for this block to global mem
-//     if (tid == 0) out[blockIdx.x] = sdata[0];
-// }
+ 
 
 // Check if an int is power of 2
 int isPowerOfTwo (unsigned int x)
@@ -230,7 +201,7 @@ void runCUDA( float *arr, int  n_old, int tile_width)
    int num_in = n, num_out = ceil((float)n / tile_width);
    float *temp;
 
-//    block.x /= 2;
+   block.x /= 2;
 
    printf("Timing simple GPU implementation… \n");
    // record a CUDA event immediately before and after the kernel launch
@@ -238,7 +209,7 @@ void runCUDA( float *arr, int  n_old, int tile_width)
    while( 1 )
    {
         // block.x = block.x / 2;
-       reduce2<<<grid, block, tile_width * sizeof(float)>>>(d_in, d_out, num_in);
+       reduce3<<<grid, block, tile_width * sizeof(float)>>>(d_in, d_out, num_in);
        check_cuda_errors(__FILE__, __LINE__);
        cudaDeviceSynchronize();
 
